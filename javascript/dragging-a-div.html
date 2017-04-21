@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!--<link REL=StyleSheet HREF="../css/style.css" TYPE="text/css">-->
+  	<style>
+  	.draggable{
+      width:100px;
+  		height:100px;
+  		background-color: midnightblue;
+  	}
+  	</style>
+  </head>
+  <body>
+         
+  	<div id="myDiv" class="draggable"></div>
+
+  </body>
+</html>
+<script>
+
+/*
+Here's the plan:
+Every time the mouse moves when dragging an element, we
+will keep track of the distance it moved since the previous
+time our event handler was called. We'll call this change 'delta'.
+
+    delta = current position - previous position
+
+Once we figure out how much the mouse has moved, then all we
+have to do is move the element the same distance
+*/
+var prevX;
+var prevY;
+
+// get a handle on myDiv
+var element = document.getElementById("myDiv");
+
+// we'll be messing with the style property of the element
+// so let's just get a handle on it here
+var style = element.style;
+
+// hook up the event handler for when the user first presses down on the element
+element.addEventListener("mousedown", startDrag, false);
+
+
+function startDrag(event){
+
+  // set the 'previous' position so that we have a starting
+  // point for when the dragging actually starts  
+  prevX = event.pageX;
+  prevY = event.pageY;
+
+  // This is cool, in order to drag something it has to be
+  // absolutely positioned, we'll do that next, but first lets
+  // figure out the current position of the element
+  var rect = element.getBoundingClientRect();
+  // note that 'rect' will be an object that has a few properties
+  // one is top, another is left. They tell us the position
+  // of the element on the page.
+
+  // now set it's position to absolute
+  // and put in the same place as it was previously
+  style.position = "absolute";
+  style.top = rect.top + "px";
+  style.left = rect.left + "px";
+
+  // to make things easier, we'll move the element
+  // so that it is a child of the body tag
+  var body = document.querySelector("body");
+  body.insertBefore(element, body.firstChild);
+
+  // now hook up the listeners we'll need while we are dragging
+  element.addEventListener("mousemove", doDrag, false);
+  element.addEventListener("mouseup", stopDrag, false);
+  element.addEventListener("mouseout", stopDrag, false);
+}
+
+function stopDrag(){
+
+  // when they are done dragging, we can remove the listeners
+  element.removeEventListener("mousemove", doDrag, false);
+  element.removeEventListener("mouseup", stopDrag, false);
+  element.removeEventListener("mouseout", stopDrag, false);
+}
+
+function doDrag(event){
+
+  // figure out how much the mouse has moved since the last time
+  // doDrag() was invoked (subtract the previous position from the current position)
+  var deltaX = event.pageX - prevX;
+  var deltaY = event.pageY - prevY;
+
+  //move the the element by the same distance as the delta
+  style.left = parseInt(style.left)  + deltaX + "px";
+  style.top = parseInt(style.top)  + deltaY + "px";
+
+  // now update the previous position for the next time the doDrag()
+  // handler is invoked
+  prevX += deltaX;
+  prevY += deltaY;
+
+}
+
+
+
+
+</script>
