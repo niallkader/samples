@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>A Simple Game Engine</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <style>
+    .game-ball{
+    	position: absolute;
+    	height:50px;
+    	width:50px;
+    	background-color: purple;
+    	border-radius: 25px;
+    }
+
+    #game-board{
+    	position: relative;
+    	background-color: black;
+    	height: 600px;
+    	width: 800px;
+    }
+    </style>
+  </head>
+  <body>
+
+  <div id="game-board"></div>
+           
+  </body>
+</html>
+<script>
+// when the page loads, run the setup function
+window.addEventListener("load", setupGame);
+
+// variables that we'll use for this game
+var timer;
+var gameObjects = [];
+var gameBoard = document.getElementById("game-board");
+var gameBoardWidth = parseInt(window.getComputedStyle(gameBoard).width);
+
+// this function creates the initial game objects and
+// then starts the game loop
+function setupGame(){
+	// create the game objects and add them to the game objects array
+	gameObjects.push(createGameObject(10,10,"red", 5));
+	gameObjects.push(createGameObject(200,10,"yellow", 10));
+	// start the game loop
+	timer = setInterval(update,10);
+}
+
+// this is our game loop function, it will loop
+// through all the game objects and reposition them based on their velocity
+function update(){
+
+	// loop through all the game objects and update their position based on their velocity
+	for(var x = 0; x < gameObjects.length; x++){
+		
+		var div = gameObjects[x];
+		// get the current position of the current game object
+		var currentLeft = parseInt(div.style.left);
+
+		// if the object hits either end of the gameboard, then
+		// reverse it's velocity
+		if(currentLeft >= gameBoardWidth || currentLeft <= 0){
+			div.velocity *= -1;
+		}
+
+		// set the new position of the current game object
+		var newLeft = currentLeft + div.velocity;
+		div.style.left = newLeft + "px";
+	}
+}
+
+// creates a div and sets some of it's properties,
+// then appends it to the game board
+function createGameObject(top, left, color, velocity){
+	var div = document.createElement("div");
+	div.setAttribute("class", "game-ball");
+	div.style.backgroundColor = color;
+	div.style.top = top + "px";
+	div.style.left = left + "px"
+	div.velocity = velocity;
+	gameBoard.appendChild(div);
+	return div;
+}
+
+</script>
