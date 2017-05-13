@@ -1,0 +1,193 @@
+##############################################################################################
+# APACHE - Note that the VM already has Apache installed, so you can skip down to MySQL
+# I just included the instructions for setting up on Ubuntu since Tage's demo was on CentOS
+##############################################################################################
+
+# install apache...
+sudo apt-get install apache2
+
+# enable mod_rewrite (you'll need it to do a lot of things, such as if you use WordPress
+# I had in my notes that I had to enable the mod_proxy in order for rewrite to work
+sudo a2enmod rewrite
+sudo a2enmod proxy 
+
+
+# To allow use of the .htaccess file I had to edit the /etc/apache2/apache2.conf file
+# I use the nano text editor to open/edit the file...
+
+sudo nano /etc/apache2/apache2.conf
+
+# <Directory /var/www>
+#	Options FollowSymLinks
+#	AllowOverride All      <<<<<<< I changed this line from None to All
+#	Require all denied
+# </Directory>
+
+# now that we've made all the configuration changes, lets restart the apache server
+sudo service apache2 restart
+
+##############################################################################################
+# MySQL
+##############################################################################################
+
+# install MySQL...
+sudo apt-get install mysql-server
+# during the install you'll be prompted to enter a password for the root user
+# I set the password to: test
+
+# to login to the server...
+mysql -u root -p
+
+# here are some commands you can run...
+show databases;
+use mysql;
+show tables;
+select * from user
+exit
+
+##############################################################################################
+# PHP
+##############################################################################################
+
+# install php...
+sudo apt-get install php5
+sudo apt-get install libapache2-mod-php
+sudo apt-get install php-mysql
+
+#restart the apache server
+sudo service apache2 restart
+
+#create a php page to test
+cd /var/www/html
+sudo touch index.php
+sudo nano index.php
+
+#add this code to the file...
+<?php
+echo("HELLO WORLD!");
+?>
+
+#get rid of the defualt html page in the doc root
+sudo mv index.html index.html.old
+
+#Now test it by opening up the browser and navigate to:
+localhost
+
+##############################################################################################
+# PHPMYADMIN
+##############################################################################################
+
+# install phpmyadmin...
+sudo apt-get install phpmyadmin
+#NOTE: just follow all the defaults and remember that we used 'test' as the root password for mysql
+
+# You have to edit the apache2.conf  to include the config file for phpmyadmin...
+sudo nano /etc/apache2/apache2.conf
+
+# add this line to the bottom of the file...
+Include /etc/phpmyadmin/apache.conf
+
+# restart the apache server
+sudo service apache2 restart
+
+# test it by going to the browser and navigate to:
+localhost/phpmyadmin
+
+#to log in, the user is root and the password is test
+
+#use phpmyadmin to create a new database called sample_db
+#to do this, click on the 'New' button on the left side
+#then in the text box labelled 'Database Name' enter: sample_db
+#then press the 'Create' button
+
+
+##############################################################################################
+# SETTING UP A NEW DATABASE AND TABLE USING MYPHPADMIN
+##############################################################################################
+
+#now let's add a table to the new database
+#click on the tab named 'SQL' in the main panel, 
+#then paste this sql statement into the big text box
+
+CREATE TABLE sample_db.users ( 
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+    	first_name VARCHAR(100) NOT NULL,
+	last_name VARCHAR(100) NOT NULL,
+	email VARCHAR(100) NOT NULL,
+ 	password VARCHAR(32) NOT NULL,
+    	active ENUM('yes','no') NOT NULL DEFAULT 'yes' 
+) 
+
+# then click the 'Go' button near the bottom of the page to run the query
+
+# now let's add some rows to the table, prest the SQL tab and enter this query...
+
+INSERT INTO users (first_name,last_name,email,password) VALUES 
+('John', 'Smith', 'js@js.com', 'test'), 
+('Betty', 'Jones', 'bj@bj.com', 'test'), 
+('Tom', 'Davis','td@td.com', 'test');
+
+
+##############################################################################################
+# Create a PHP page that connects to the database and gets the users from it
+##############################################################################################
+
+# now use gedit to open the php page that we created earlier...
+sudo gedit /var/www/html/index.php
+
+# replace the contents of index.php with everything below this line...
+
+<html>
+	<head>
+		<title>PHP and MySQL</title>
+	</head>
+	<body>
+
+<?php
+
+// set up some variables that will be used to connect to the database
+$host = "localhost";
+$db = "sample_db";
+$user = "root";
+$password = "test";
+
+// get a 'link' to the database in the MySQL server
+// (you might call this a 'connection' in other languages)
+$link = mysqli_connect($host, $user, $password, $db);
+
+if(!$link){
+	// You wouldn't want to do this in production....
+	die(mysqli_connect_error());
+}
+
+//var_dump($link);
+
+// now we have a link to the db, we can run a query
+$qStr = "SELECT first_name,last_name,email FROM users";
+
+// run the query and get a result set back
+$result = mysqli_query($link, $qStr);
+
+// if result is false then we have a problem
+if(!$result){
+	// you wouldn't want to do this in production
+	die(mysqli_error($link));
+}
+
+//echo(mysqli_num_rows($result));
+//var_dump($result);
+
+// now we can loop through the result set
+if(mysqli_num_rows($result) > 0){
+	while($row = mysqli_fetch_array($result)){
+		echo($row['first_name']);
+		echo($row['last_name']);
+		echo($row['email']);
+		echo("<br><br>");
+	}
+}
+
+?>
+
+	</body>
+</html>
