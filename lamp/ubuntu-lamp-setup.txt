@@ -1,4 +1,17 @@
 ##############################################################################################
+# VM NOTES
+##############################################################################################
+root user: lamp
+root pass: cabincoffee
+
+# installed git
+sudu apt-get install git
+
+# then I cloned the git repo that has these instructions
+git clone https://github.com/niallkader/samples.git
+
+
+##############################################################################################
 # APACHE - Note that the VM already has Apache installed, so you can skip down to MySQL
 # I just included the instructions for setting up on Ubuntu since Tage's demo was on CentOS
 ##############################################################################################
